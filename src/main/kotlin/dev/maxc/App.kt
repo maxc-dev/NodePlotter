@@ -1,10 +1,13 @@
 package dev.maxc
 
+import dev.maxc.ui.MainController
 import javafx.application.Application
+import javafx.application.Platform
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.stage.Stage
-
+import javafx.stage.StageStyle
+import java.util.*
 
 /**
  * @author Max Carter
@@ -12,8 +15,18 @@ import javafx.stage.Stage
  */
 class App : Application() {
     override fun start(stage: Stage?) {
-        stage?.scene = Scene(FXMLLoader.load(javaClass.getResource("/root.fxml")))
-        stage?.show()
+        if (stage != null) {
+            val loader = FXMLLoader(javaClass.getResource("/root.fxml"))
+            val scene = Scene(loader.load())
+            stage.scene = scene
+
+            stage.isAlwaysOnTop = true
+            stage.x = 0.0
+            stage.y = 0.0
+            stage.initStyle(StageStyle.UNDECORATED)
+
+            stage.show()
+        }
     }
 
     companion object {

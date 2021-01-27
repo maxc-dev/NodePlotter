@@ -10,6 +10,7 @@ import javafx.animation.Timeline
 import javafx.event.EventHandler
 import javafx.util.Duration
 import dev.maxc.ui.Utils
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -18,11 +19,12 @@ import kotlin.math.sin
  * @author Max Carter
  * @since  26/01/2021
  */
-class DisplayNode(val analytics: Analytics, val word: String, var frequency: Int = 1) : Circle(0.0, 0.0, MIN_RADIUS, Color.rgb(60, 170, 170)) {
+class DisplayNode(val analytics: Analytics, val word: String, var frequency: Int = 1) :
+    Circle(0.0, 0.0, MIN_RADIUS, Color.rgb(60, 170, 170)) {
     val displayLinks = arrayListOf<DisplayLink>()
 
-    private val OFFSET_Y = 4
-    private val OFFSET_X = 12
+    private var targetRatio = 1.0
+    private var actualRatio = 1.0
 
     private var xOffset = 0.0
     private var yOffset = 0.0
@@ -34,14 +36,32 @@ class DisplayNode(val analytics: Analytics, val word: String, var frequency: Int
         setPosition()
     }
 
-    fun calcOffsets() {
-        xOffset = (0.5 / frequency) + Utils.randomInt(0, OFFSET_X).toDouble() / 10
-        yOffset = (0.2 / frequency) + Utils.randomInt(0, OFFSET_Y).toDouble() / 10
+    private fun calcOffsets() {
+        /*
+            with offsets
+            0 means the node will be in the center
+            1 means the node will be to the edge
+         */
+
+        xOffset = Utils.randomInt(75, 100).toDouble() / 100
+        yOffset = Utils.randomInt(75, 100).toDouble() / 100
     }
 
-    fun setPosition() {
-        setLayoutX(xOffset * sin(Math.toRadians(counter)) * (Utils.WIDTH / 3) + Utils.WIDTH / 2)
-        setLayoutY(yOffset * cos(Math.toRadians(counter)) * (Utils.HEIGHT) + Utils.HEIGHT / 2)
+    private fun setPosition() {
+        val testRatio = analytics.getNodeTargetRatio(this)
+        if (testRatio != targetRatio) {
+            targetRatio = testRatio
+        } else {
+            if (abs(targetRatio - actualRatio) < RATIO_INCREASE) {
+                actualRatio = targetRatio
+            } else if (targetRatio > actualRatio) {
+                actualRatio += RATIO_INCREASE
+            } else {
+                actualRatio -= RATIO_INCREASE
+            }
+        }
+        setLayoutX((xOffset * actualRatio * sin(Math.toRadians(counter)) * (Utils.WIDTH / 2)) + Utils.WIDTH / 2)
+        setLayoutY((yOffset * actualRatio * cos(Math.toRadians(counter)) * (Utils.HEIGHT / 2)) + Utils.HEIGHT / 2)
     }
 
     fun show() {
@@ -55,7 +75,7 @@ class DisplayNode(val analytics: Analytics, val word: String, var frequency: Int
             KeyFrame(
                 Duration.seconds(0.01),
                 EventHandler {
-                    counter += 0.02
+                    counter += 0.0001 + analytics.getNodeTargetRatio(this) /10
                     if (counter >= 360) {
                         counter = 0.0;
                     }
@@ -86,7 +106,7 @@ class DisplayNode(val analytics: Analytics, val word: String, var frequency: Int
             KeyFrame(
                 Duration.seconds(0.2),
                 EventHandler {
-                    radius = MIN_RADIUS + (RADIUS_INCREASE * rate)
+                    radius = Math.min(MIN_RADIUS + (RADIUS_INCREASE_RATIO * rate), MAX_RADIUS)
                     rate += 0.2
                 })
         )
@@ -96,7 +116,9 @@ class DisplayNode(val analytics: Analytics, val word: String, var frequency: Int
     }
 
     companion object {
-        private const val MIN_RADIUS = 2.0
-        private const val RADIUS_INCREASE = 1.5
+        private const val MIN_RADIUS = 1.0
+        private const val MAX_RADIUS = 14.0
+        private const val RADIUS_INCREASE_RATIO = 1.1
+        private const val RATIO_INCREASE = 0.0005
     }
 }

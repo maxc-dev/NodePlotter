@@ -1,28 +1,39 @@
 package dev.maxc.ui
 
-import dev.maxc.ui.model.DisplayLink
 import dev.maxc.ui.model.DisplayNode
+import kotlin.math.min
+import kotlin.math.pow
 
 
 /**
  * @author Max Carter
  * @since  27/01/2021
  */
-class Analytics(val dataPoints: ArrayList<DisplayNode>, val dataLinks: ArrayList<DisplayLink>) {
+class Analytics {
     /*
         Calculates sizes and proportions based on data set
      */
 
-    /**
-     * Returns the size the node should be based on it's outward links
-     * in relation to the total amount of outward links
-     */
-    fun getNodeSize(node: DisplayNode): Double {
-       // val ratio = (node.links.size/dataLinks.size).toDouble() //also need to bare in mind frequency?
-        return 0.0;
-    }
+    var nodeCount = 0
+    var linkCount = 0
+    var highestLinkage = 0
 
-    fun getNodeOffsetX(node: DisplayNode): Double {
-        return 0.0
+    /**
+     * Returns the node position ratio that the node should target to be at
+     */
+    fun getNodeTargetRatio(node: DisplayNode): Double {
+        val size = node.displayLinks.size
+        if (size > highestLinkage) {
+            highestLinkage = size
+        }
+
+        if (nodeCount <= 1) {
+            return 1.0
+        }
+        /*
+            with dataset with large connections, nodes quickly tend to the center
+         */
+        val ratio = min(node.displayLinks.size.toDouble() /highestLinkage.toDouble(), 0.95)
+        return 1 - ratio
     }
 }

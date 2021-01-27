@@ -12,6 +12,7 @@ import javafx.util.Duration
 import dev.maxc.ui.Utils
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.sin
 
 
@@ -43,8 +44,8 @@ class DisplayNode(val analytics: Analytics, val word: String, var frequency: Int
             1 means the node will be to the edge
          */
 
-        xOffset = Utils.randomInt(75, 100).toDouble() / 100
-        yOffset = Utils.randomInt(75, 100).toDouble() / 100
+        xOffset = Utils.randomInt(60, 90).toDouble() / 100
+        yOffset = Utils.randomInt(60, 90).toDouble() / 100
     }
 
     private fun setPosition() {
@@ -60,8 +61,8 @@ class DisplayNode(val analytics: Analytics, val word: String, var frequency: Int
                 actualRatio -= RATIO_INCREASE
             }
         }
-        setLayoutX((xOffset * actualRatio * sin(Math.toRadians(counter)) * (Utils.WIDTH / 2)) + Utils.WIDTH / 2)
-        setLayoutY((yOffset * actualRatio * cos(Math.toRadians(counter)) * (Utils.HEIGHT / 2)) + Utils.HEIGHT / 2)
+        layoutX = (xOffset * actualRatio * sin(Math.toRadians(counter)) * (Utils.WIDTH / 2)) + Utils.WIDTH / 2
+        layoutY = (yOffset * actualRatio * cos(Math.toRadians(counter)) * (Utils.HEIGHT / 2)) + Utils.HEIGHT / 2
     }
 
     fun show() {
@@ -75,9 +76,9 @@ class DisplayNode(val analytics: Analytics, val word: String, var frequency: Int
             KeyFrame(
                 Duration.seconds(0.01),
                 EventHandler {
-                    counter += 0.0001 + analytics.getNodeTargetRatio(this) /10
+                    counter += 0.0001 + analytics.getNodeTargetRatio(this) / 10
                     if (counter >= 360) {
-                        counter = 0.0;
+                        counter = 0.0
                     }
                     setPosition()
                     nodeMoved()
@@ -100,19 +101,19 @@ class DisplayNode(val analytics: Analytics, val word: String, var frequency: Int
 
     private fun grow() {
         frequency++
-        //calcOffsets()
-        var rate = frequency.toDouble()
-        val timeline = Timeline(
-            KeyFrame(
-                Duration.seconds(0.2),
-                EventHandler {
-                    radius = Math.min(MIN_RADIUS + (RADIUS_INCREASE_RATIO * rate), MAX_RADIUS)
-                    rate += 0.2
-                })
-        )
-        timeline.cycleCount = 5
-        timeline.play()
-
+        if (radius < MAX_RADIUS) {
+            var rate = frequency.toDouble()
+            val timeline = Timeline(
+                KeyFrame(
+                    Duration.seconds(0.2),
+                    EventHandler {
+                        radius = min(MIN_RADIUS + (RADIUS_INCREASE_RATIO * rate), MAX_RADIUS)
+                        rate += 0.2
+                    })
+            )
+            timeline.cycleCount = 5
+            timeline.play()
+        }
     }
 
     companion object {

@@ -1,6 +1,5 @@
 package dev.maxc.ui
 
-import dev.maxc.ui.model.DataLink
 import dev.maxc.ui.model.DisplayLink
 import dev.maxc.ui.model.DisplayNode
 import javafx.fxml.FXML
